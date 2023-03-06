@@ -1,10 +1,8 @@
 import FileInput from "@/components/ui/FileInput";
 import { AlertCircle } from "lucide-react";
 import Head from "next/head";
-import { useCallback, useState } from "react";
-import type { ErrorCode, FileRejection } from "react-dropzone";
+import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { toast } from "react-hot-toast";
 
 type Inputs = {
   file: File | null;
@@ -18,42 +16,6 @@ export default function Home() {
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     console.log(data);
   };
-
-  // register file input with react-hook-form
-  const onDrop = useCallback(
-    async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
-      acceptedFiles.forEach(async (file) => {
-        if (!file) return;
-        setValue("file", file, {
-          shouldValidate: true,
-        });
-      });
-      rejectedFiles.forEach((file) => {
-        setValue("file", null, {
-          shouldValidate: true,
-        });
-
-        switch (file.errors[0]?.code as ErrorCode) {
-          case "file-invalid-type":
-            toast.error("Please select a audio or video file");
-            break;
-          case "file-too-large":
-            const size = (file.file.size / 1024 / 1024).toFixed(2);
-            toast.error(
-              `Please select a file smaller than 15MB. Current size: ${size}MB`
-            );
-            break;
-          case "too-many-files":
-            toast.error("Please select only one file");
-            break;
-          default:
-            toast.error(file.errors[0]?.message);
-            break;
-        }
-      });
-    },
-    [setValue]
-  );
 
   return (
     <>
@@ -87,7 +49,8 @@ export default function Home() {
               Select your file (audio or video)
             </label>
             <FileInput
-              onDrop={onDrop}
+              name="file"
+              setValue={setValue}
               accept={{
                 "audio/*": [".mp3", ".wav", ".ogg"],
                 "video/*": [".m4a", ".mp4", ".mpeg", ".mpga", ".wav", ".webm"],

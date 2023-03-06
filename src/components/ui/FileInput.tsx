@@ -1,19 +1,17 @@
 import { DownloadCloud, Loader2 } from "lucide-react";
+import { useCallback } from "react";
 import {
+  ErrorCode,
   useDropzone,
   type Accept,
-  type DropEvent,
-  type FileRejection
+  type FileRejection,
 } from "react-dropzone";
+import { FieldValues, Path, PathValue, UseFormSetValue } from "react-hook-form";
+import { toast } from "react-hot-toast";
 
-type FileInputProps = {
-  onDrop:
-    | (<T extends File>(
-        acceptedFiles: T[],
-        fileRejections: FileRejection[],
-        event: DropEvent
-      ) => void)
-    | undefined;
+type FileInputProps<TInputs extends FieldValues> = {
+  name: Path<TInputs>;
+  setValue: UseFormSetValue<TInputs>;
   accept?: Accept;
   maxSize: number;
   maxFiles?: number;
@@ -21,8 +19,9 @@ type FileInputProps = {
   className?: string;
 };
 
-const FileInput = ({
-  onDrop,
+const FileInput = <TInputs extends FieldValues>({
+  name,
+  setValue,
   maxSize,
   maxFiles = 1,
   accept = {
@@ -31,7 +30,42 @@ const FileInput = ({
   },
   isUploading,
   className = "",
-}: FileInputProps) => {
+}: FileInputProps<TInputs>) => {
+  const onDrop = useCallback(
+    async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
+      acceptedFiles.forEach(async (file) => {
+        if (!file) return;
+        setValue(name, file as PathValue<TInputs, Path<TInputs>>, {
+          shouldValidate: true,
+        });
+      });
+      rejectedFiles.forEach((file) => {
+        setValue(name, null as PathValue<TInputs, Path<TInputs>>, {
+          shouldValidate: true,
+        });
+
+        switch (file.errors[0]?.code as ErrorCode) {
+          case "file-invalid-type":
+            toast.error("Please select a audio or video file");
+            break;
+          case "file-too-large":
+            const size = (file.file.size / 1024 / 1024).toFixed(2);
+            toast.error(
+              `Please select a file smaller than 15MB. Current size: ${size}MB`
+            );
+            break;
+          case "too-many-files":
+            toast.error("Please select only one file");
+            break;
+          default:
+            toast.error(file.errors[0]?.message);
+            break;
+        }
+      });
+    },
+    [name, setValue]
+  );
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept,
