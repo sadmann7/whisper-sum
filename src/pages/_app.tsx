@@ -36,9 +36,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
     <QueryClientProvider client={queryClient}>
       <Hydrate state={pageProps.dehydratedState}>
         <Head>
-          <title>
-            WhisperSum - Summarize Your Audio and Video Content with AI
-          </title>
+          <title>WhisperSum - Summarize Audio and Video Content with AI</title>
         </Head>
         {getLayout(<Component {...pageProps} />)}
         <ToasterWrapper />

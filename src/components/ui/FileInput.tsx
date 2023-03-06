@@ -1,5 +1,5 @@
 import { DownloadCloud, Loader2 } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import {
   ErrorCode,
   useDropzone,
@@ -31,6 +31,7 @@ const FileInput = <TInputs extends FieldValues>({
   isUploading,
   className = "",
 }: FileInputProps<TInputs>) => {
+  const [file, setFile] = useState<File | null>(null);
   const onDrop = useCallback(
     async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       acceptedFiles.forEach(async (file) => {
@@ -38,12 +39,13 @@ const FileInput = <TInputs extends FieldValues>({
         setValue(name, file as PathValue<TInputs, Path<TInputs>>, {
           shouldValidate: true,
         });
+        setFile(file);
       });
       rejectedFiles.forEach((file) => {
         setValue(name, null as PathValue<TInputs, Path<TInputs>>, {
           shouldValidate: true,
         });
-
+        setFile(null);
         switch (file.errors[0]?.code as ErrorCode) {
           case "file-invalid-type":
             toast.error("Please select a audio or video file");
@@ -51,7 +53,9 @@ const FileInput = <TInputs extends FieldValues>({
           case "file-too-large":
             const size = (file.file.size / 1024 / 1024).toFixed(2);
             toast.error(
-              `Please select a file smaller than 15MB. Current size: ${size}MB`
+              `Please select a file smaller than ${
+                maxSize / 1024 / 1024
+              }MB. Current size: ${size}MB`
             );
             break;
           case "too-many-files":
@@ -63,7 +67,7 @@ const FileInput = <TInputs extends FieldValues>({
         }
       });
     },
-    [name, setValue]
+    [maxSize, name, setValue]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -76,7 +80,7 @@ const FileInput = <TInputs extends FieldValues>({
   return (
     <div
       {...getRootProps()}
-      className={`grid h-60 w-full min-w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed p-2 text-center text-base text-gray-300 transition hover:bg-gray-700/80 disabled:cursor-not-allowed ${
+      className={`grid h-40 w-full min-w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed p-2 text-center text-base text-gray-300 transition hover:bg-gray-700/80 disabled:cursor-not-allowed ${
         isDragActive ? "border-gray-500" : "border-gray-500"
       } ${className}}`}
     >
@@ -88,6 +92,8 @@ const FileInput = <TInputs extends FieldValues>({
         </div>
       ) : isUploading ? (
         <Loader2 className="h-8 w-8 animate-spin" />
+      ) : file ? (
+        <p className="font-medium">{file.name}</p>
       ) : (
         <div className="grid place-items-center gap-2 px-10">
           <DownloadCloud aria-hidden="true" className="h-8 w-8" />
@@ -96,7 +102,7 @@ const FileInput = <TInputs extends FieldValues>({
           </p>
           <p className="text-sm text-gray-400">
             Please upload file with size less than{" "}
-            {Math.round(maxSize / 1000000)}MB
+            {Math.round(maxSize / 1024 / 1024)}MB
           </p>
         </div>
       )}

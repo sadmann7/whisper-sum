@@ -8,10 +8,10 @@ type MetaProps = {
 };
 
 const Meta = ({
-  title = "WhisperSum - Summarize Your Audio and Video Content with AI",
+  title = "WhisperSum - Summarize Audio and Video Content with AI",
   sitename = "WhisperSum - Summarize Your Audio and Video Content with AI",
-  description = "WhisperSum is an AI-powered web application that lets you easily transcribe your audio and video content into text and summarize it into bite-sized pieces",
-  image = "https://whispersum.vercel.app/api/og?title=Video%20Digest&description=Summarize%20Your%20Video%20Content%20with%20AI",
+  description = "WhisperSum is an AI-powered web application transcribes audio and video content into text and summarize it into bite-sized pieces",
+  image = "https://whispersum.vercel.app/api/og?title=WhisperSum&description=Summarize%20Video%20Content%20with%20AI",
 }: MetaProps) => {
   return (
     <Head>
